@@ -1,13 +1,15 @@
 #!/usr/bin/python
 
-
 from mininet.net import Mininet
 from mininet.node import RemoteController, OVSSwitch, CPULimitedHost
 from mininet.link import TCLink
 from mininet.cli import CLI
 from mininet.log import setLogLevel, info
 
+#Defining the Net from scratch
 def emptyNet(dl, baw, ls, qs):
+
+    #Conditioning parameters to be as per user or default values if user provided minimum/maximum values
     if dl == 0:
       dl = None
     else:
@@ -18,9 +20,6 @@ def emptyNet(dl, baw, ls, qs):
       ls = None
     if qs == 1000:
       qs = None
-    #######################################
-    # Constants
-    #######################################
 
     #######################################
     # Run mininet
@@ -29,6 +28,8 @@ def emptyNet(dl, baw, ls, qs):
 
     info( '*** Adding controller\n' )
     net.addController('c0', controller=RemoteController,ip="127.0.0.1",port=6633)
+
+    #A dummy host to attach with controller and then connect that host with a switch
     h0 = net.addHost('h0', ip='127.0.0.1')
 
     info( '*** Adding hosts\n' )
@@ -41,14 +42,14 @@ def emptyNet(dl, baw, ls, qs):
       switch.append(net.addSwitch('s' + str(i+1), cls=OVSSwitch))
 
     info( '*** Creating links\n' )
-    ## controller - switch (s4)
+    ## controller - switch (s1)
     net.addLink( h0, switch[0] )
 
     ## host - switch
     for i in range(10):
       net.addLink(host[i], switch[i],bw=baw,loss=ls,max_queue_size=qs,delay=dl)
 
-    ## switches
+    ## switche links
     for index in range (0, 10):
       for index2 in range(index+1, 10):
         net.addLink(switch[index],switch[index2], bw=baw,loss=ls,max_queue_size=qs,delay=dl)
@@ -56,7 +57,7 @@ def emptyNet(dl, baw, ls, qs):
     info( '*** Starting network\n')
     net.start()
 
-    #info('*** Set ip address to switch\n')
+    # Set ip address to switch
     for i in range (10):
       switch[i].cmd('ifconfig s' + str(i+1) + ' 10.0.1.' + str(i+1))
 
@@ -64,6 +65,7 @@ def emptyNet(dl, baw, ls, qs):
     for i in range(10): 
       switch[i].cmd('ovs-vsctl set bridge s' + str(i+1) + 'stp-enable=true')
 
+    #Starting up the mininet CLI for testing
     info( '*** Running CLI\n' )
     CLI( net )
 
@@ -71,9 +73,12 @@ def emptyNet(dl, baw, ls, qs):
     net.stop()
 
 if __name__ == '__main__':
+    # Get user inputs to various parameters
     setLogLevel( 'info' )
     delay = input("Enter Delay to introduce in ms: ")
     bw = input("Desired bandwidth in Mbps: ")
     loss = input("Enter loss %: ")
     qs = input("enter max_queue size: ")
+
+    #Call the function to build the net
     emptyNet(float(delay), float(bw), float(loss), float(qs))

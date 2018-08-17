@@ -1,6 +1,5 @@
 #!/usr/bin/python
 
-
 from mininet.net import Mininet
 from mininet.node import RemoteController, OVSSwitch
 from mininet.cli import CLI
@@ -9,7 +8,10 @@ from mininet.node import CPULimitedHost
 from mininet.link import TCLink
 from mininet.util import dumpNodeConnections
 
+#Defining the Net from scratch
 def emptyNet(dl, baw, ls, qs):
+
+    #Conditioning parameters to be as per user or default values if user provided minimum/maximum values
     if dl == 0:
       dl = None
     else:
@@ -22,19 +24,17 @@ def emptyNet(dl, baw, ls, qs):
       qs = None
 
     #######################################
-    # Constants
-    #######################################
-
-    #######################################
     # Run mininet
     #######################################
     net = Mininet( topo=None, build=False,host=CPULimitedHost,link=TCLink )
 
-    info( '*** Adding controller\n' )
+    info( 'Adding controller\n' )
     net.addController('c0',ip="127.0.0.1",port=6633)
+
+    #A dummy host to attach with controller and then connect that host with a switch
     h0 = net.addHost('h0', ip='127.0.0.1')
 
-    info( '*** Adding hosts\n' )
+    info( 'Adding hosts\n' )
     host = []
     switch = []
     for i in range(10):
@@ -44,10 +44,11 @@ def emptyNet(dl, baw, ls, qs):
       switch.append(net.addSwitch('s' + str(i+1), cls=OVSSwitch))
 
     info( '*** Creating links\n' )
+    
     ## controller - switch (s1)
     net.addLink( h0, switch[0] , bw=baw, loss=ls, delay=dl, max_queue_size=qs)
 
-    ## host - switch
+    ## host - switch links with parameters
     for i in range(10):
       net.addLink(host[i], switch[0], bw=baw, loss=ls, delay=dl, max_queue_size=qs)
 
@@ -55,10 +56,11 @@ def emptyNet(dl, baw, ls, qs):
     info( '*** Starting network\n')
     net.start()
 
-    #info('*** Set ip address to switch\n')
+    #Set ip address to switch
     for i in range (1):
       switch[i].cmd('ifconfig s' + str(i+1) + ' 10.0.1.' + str(i+1))
 
+    #Starting up the mininet CLI for testing
     info( '*** Running CLI\n' )
     CLI( net )
 
@@ -66,9 +68,12 @@ def emptyNet(dl, baw, ls, qs):
     net.stop()
 
 if __name__ == '__main__':
+    # Get user inputs to various parameters
     setLogLevel( 'info' )
     delay = input("Enter Delay to introduce in ms: ")
     bw = input("Desired bandwidth in Mbps: ")
     loss = input("Enter loss %: ")
     qs = input("enter max_queue size: ")
+
+    #Call the function to build the net
     emptyNet(float(delay), float(bw), float(loss), float(qs))
