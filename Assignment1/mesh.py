@@ -75,10 +75,10 @@ def emptyNet(dl, baw, ls, qs):
 if __name__ == '__main__':
     # Get user inputs to various parameters
     setLogLevel( 'info' )
-    delay = input("Enter Delay to introduce in ms: ")
-    bw = input("Desired bandwidth in Mbps: ")
-    loss = input("Enter loss %: ")
-    qs = input("enter max_queue size: ")
+    delay = input("Enter Delay to introduce in ms(Enter 0 for default): ")
+    bw = input("Desired bandwidth in Mbps (0-1000: 1000 for default): ")
+    loss = input("Enter loss % (0-100: 0 for default): ")
+    qs = input("enter max_queue size (0-1000: 1000 for default): ")
 
     #Call the function to build the net
     emptyNet(float(delay), float(bw), float(loss), float(qs))
